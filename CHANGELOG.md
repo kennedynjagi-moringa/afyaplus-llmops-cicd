@@ -6,6 +6,23 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-07
+
+Ships: prompt **1.2.0** (active, `da2a2183ac50`, waiver until 2026-11-30) and **1.3.0-candidate**
+(`20f536db4193`) on 10% of staging routing keys; MCP **afyaplus-logistics 1.1.0**; model
+`gpt-4o-mini-2024-07-18` (model_version 2026.10.0). Rollback: `PROMPT_VERSION=1.2.0` or `CANDIDATE_PERCENT=0`
+on the same image, or image `afyaplus-triage:1.2.0`.
+
+### Added
+- Prompt 1.3.0-candidate: explicit URGENT and EMERGENCY criteria (fever in under-5s, stopped long-term
+  medicines, pregnancy and newborn danger signs, poisoning, stroke signs, self-harm), no doses, and
+  instructions inside CHW messages are ignored. Eval: 0.973 agreement (holdout 0.933), emergency recall 1.0,
+  0 must_not violations. Cost: about $0.146 per 1,000 triages vs $0.099 for 1.2.0 (longer prompt).
+- MCP 1.1.0: `find_clinics` takes an optional `has_stock_item` (MINOR; the 1.0.0 call shape is unchanged).
+
+### Changed
+- `release` 1.3.0; prompt bundle 1.3.0; MCP schema lock regenerated for 1.1.0.
+
 ## [1.2.0] - 2026-10-07
 
 Ships: prompt **1.2.0** (active, `da2a2183ac50`), MCP **afyaplus-logistics 1.0.0**, model
@@ -30,5 +47,6 @@ Ships: prompt **1.2.0** (active, `da2a2183ac50`), MCP **afyaplus-logistics 1.0.0
   2026-11-30 while a fix is canaried. Code-level danger-sign rules remain on.
 - Keyword safety rules match "fits" in "no fits so far" (holdout H04): a known over-triage false positive.
 
-[Unreleased]: compare v1.2.0...HEAD
+[Unreleased]: compare v1.3.0...HEAD
+[1.3.0]: compare v1.2.0...v1.3.0
 [1.2.0]: first gated release
