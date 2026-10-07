@@ -36,7 +36,7 @@ tests/test_eval_gate.py::test_waiver_never_covers_must_not PASSED        [ 39%]
 tests/test_eval_gate.py::test_quarantine_rules PASSED                    [ 41%]
 tests/test_eval_gate.py::test_missing_recording_cannot_run PASSED        [ 42%]
 tests/test_eval_gate.py::test_stale_recording_cannot_run PASSED          [ 44%]
-tests/test_eval_gate.py::test_cli_on_repo_state_passes PASSED            [ 46%]
+tests/test_eval_gate.py::test_cli_scores_the_active_prompt PASSED        [ 46%]
 tests/test_eval_gate.py::test_cli_blocks_the_cost_trim_draft PASSED      [ 47%]
 tests/test_eval_gate.py::test_cli_cannot_run_without_recording PASSED    [ 49%]
 tests/test_eval_gate.py::test_golden_set_shape PASSED                    [ 50%]
@@ -72,4 +72,4 @@ tests/test_prompt_loader.py::test_config_rejects_unknown_fields_and_bad_versions
 tests/test_tool_metrics.py::test_counts_error_rate_and_percentiles PASSED [ 98%]
 tests/test_tool_metrics.py::test_shared_between_instances PASSED         [100%]
 
-============================= 63 passed in 17.74s ==============================
+============================= 63 passed in 17.64s ==============================
