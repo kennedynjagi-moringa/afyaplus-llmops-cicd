@@ -28,7 +28,7 @@ def login(url: str, user: str, password: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="http://127.0.0.1:8080")
-    ap.add_argument("--n", type=int, default=300)
+    ap.add_argument("--n", type=int, default=600)
     args = ap.parse_args(argv)
     token = login(args.url, os.environ.get("SMOKE_USER", "chw_amina"),
                   os.environ.get("SMOKE_PASSWORD", "amina-chw-2026"))

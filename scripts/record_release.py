@@ -24,9 +24,9 @@ def main(image: str) -> int:
     text = RUNBOOK.read_text(encoding="utf-8")
     head, rest = text.split(START, 1)
     body, tail = rest.split(END, 1)
-    lines = [ln for ln in body.strip("\n").splitlines() if f"`{image}`" not in ln]
+    lines = [ln for ln in body.strip("\n").splitlines() if ln.strip() and f"`{image}`" not in ln]
     lines.append(row)
-    RUNBOOK.write_text(head + START + "\n" + "\n".join(lines) + "\n" + END + tail, encoding="utf-8")
+    RUNBOOK.write_text(head + START + "\n\n" + "\n".join(lines) + "\n\n" + END + tail, encoding="utf-8")
     print(f"recorded {image} {info['Id'][:19]} in runbook.md release ledger")
     return 0
 

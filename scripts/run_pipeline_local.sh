@@ -25,7 +25,7 @@ stage() {   # stage <name> <command...>: run, tee, and stop the pipeline if it f
   local rc=$?
   echo "---------------- $name: $([[ $rc == 0 ]] && echo PASSED || echo "FAILED (exit $rc)") in $((SECONDS - started))s"
   if [[ $rc != 0 ]]; then
-    echo; echo "PIPELINE FAILED at stage '$name': downstream stages (incl. build-deploy) did not run."
+    echo; echo "PIPELINE FAILED at stage '$name': no later stage ran, and nothing was deployed past this point."
     exit "$rc"
   fi
 }
