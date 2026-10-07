@@ -425,8 +425,12 @@ def main(argv: list[str] | None = None) -> int:
         (report_dir / f"eval_{res.prompt.version}_{res.prompt.short_sha}.json").write_text(
             json.dumps(report_json(res), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     failed = [r for r in results if not r.passed]
+    def label(r: Result) -> str:
+        waived = any(g.get("waived") for g in r.gates)
+        return f"{r.prompt.version}={r.agreement:.4f}" + (f" (WAIVED until {r.waiver['expires']})" if waived else "")
+
     verdict = ("EVAL GATE FAILED: " + ", ".join(f"{r.prompt.version} ({r.role})" for r in failed)) if failed \
-        else "EVAL GATE PASSED: " + ", ".join(f"{r.prompt.version}={r.agreement:.4f}" for r in results)
+        else "EVAL GATE PASSED: " + ", ".join(label(r) for r in results)
     print(verdict)
     return EXIT_GATE_FAILED if failed else EXIT_PASS
 
