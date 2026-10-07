@@ -6,6 +6,19 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-07
+
+Ships exactly what 1.3.0 ships: prompt 1.2.0 active (`da2a2183ac50`, waiver until 2026-11-30), 1.3.0-candidate
+(`20f536db4193`) on 10% of staging keys, and MCP 1.1.0. Only the release number differs inside the image.
+Rollback is unchanged: `CANDIDATE_PERCENT=0` or `PROMPT_VERSION=1.2.0`, or image `afyaplus-triage:1.2.0`.
+
+### Fixed
+- The v1.3.0 tag pipeline was red at build-deploy, because its 300 smoke requests put only 29 on the candidate,
+  below the canary gate's minimum of 40. The gate said NO-GO and rolled the canary back by itself. The deploy stub
+  now sends 600. Tags are immutable, so this ships as a PATCH release rather than moving v1.3.0.
+- The canary error rate must now be strictly under 0.10, as the go/no-go rule states (0.10 exactly used to pass).
+- CI teardown: `docker compose down` needed a `JWT_SECRET` to interpolate the compose file.
+
 ## [1.3.0] - 2026-10-07
 
 Ships: prompt **1.2.0** (active, `da2a2183ac50`, waiver until 2026-11-30) and **1.3.0-candidate**
@@ -47,6 +60,7 @@ Ships: prompt **1.2.0** (active, `da2a2183ac50`), MCP **afyaplus-logistics 1.0.0
   2026-11-30 while a fix is canaried. Code-level danger-sign rules remain on.
 - Keyword safety rules match "fits" in "no fits so far" (holdout H04): a known over-triage false positive.
 
-[Unreleased]: compare v1.3.0...HEAD
+[Unreleased]: compare v1.3.1...HEAD
+[1.3.1]: compare v1.3.0...v1.3.1
 [1.3.0]: compare v1.2.0...v1.3.0
 [1.2.0]: first gated release
