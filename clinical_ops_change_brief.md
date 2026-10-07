@@ -56,7 +56,7 @@ trial's error rate goes above 10%, the system stops the trial by itself.
 ## Who approved
 
 The CODEOWNERS for clinical_ops and ml-eng, on the `feature/prompt-1.3.0-candidate` pull request (merge `29fac44`),
-released as v1.3.0. *In this capstone the author played both roles; in production these are two different people.*
+released as v1.3.0 (re-released as v1.3.1 with a fix to the automatic checks, no change to what CHWs see). *In this capstone the author played both roles; in production these are two different people.*
 
 ## Go or no-go
 

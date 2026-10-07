@@ -1,7 +1,7 @@
 # LLMOps runbook: AfyaPlus triage (prompts, config, MCP)
 
 **Service:** `afyaplus-triage` (FastAPI, `prompt_app.py`) with the `afyaplus-logistics` MCP server in the same image.
-**Current release:** v1.3.0. Prompt 1.2.0 is active, 1.3.0-candidate serves 10% of staging keys, and MCP is at 1.1.0.
+**Current release:** v1.3.1 (v1.3.0 plus pipeline fixes). Prompt 1.2.0 is active, 1.3.0-candidate serves 10% of staging keys, and MCP is at 1.1.0.
 **This page covers** rolling forward, rolling back, where traces are, who reviews what, the Definition of Done, and
 the governance rule. It is written for whoever is on call, including at 01:00.
 
@@ -162,6 +162,7 @@ of the tag).
 |---|---|---|---|---|---|---|---|
 | 2026-10-07 | `afyaplus-triage:1.2.0` | `sha256:d66b6d9c510ec48c254bb3a12b16fe9bc32cbc9361bc49f2063402a22a3a50ac` | `de3c39a46d3a` | 1.2.0 (`da2a2183ac50`) | none | 1.0.0 | 2026.10.0 |
 | 2026-10-07 | `afyaplus-triage:1.3.0` | `sha256:550e67da89aead0c4b4a52981b41314d8b48ed027e1dc56d4b53a28a5f56046a` | `ff0c29f8e753` | 1.2.0 (`da2a2183ac50`) | 1.3.0-candidate | 1.1.0 | 2026.10.0 |
+| 2026-10-07 | `afyaplus-triage:1.3.1` | `sha256:7202308e4ee84c599c22b076612a3b09f0ead9c1ac230119a2041824a660807c` | `4e91ca58fec7` | 1.2.0 (`da2a2183ac50`) | 1.3.0-candidate | 1.1.0 | 2026.10.0 |
 
 <!-- release-ledger:end -->
 

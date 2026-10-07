@@ -46,13 +46,13 @@ and `docs/evidence/` holds the terminal transcripts.
 
 ## Versions
 
-| | v1.2.0 (rollback target) | **v1.3.0 (current)** |
+| | v1.2.0 (rollback target) | **v1.3.1 (current)** |
 |---|---|---|
-| git tag = image tag = prompt bundle | `v1.2.0` = `afyaplus-triage:1.2.0` = bundle 1.2.0 | `v1.3.0` = `afyaplus-triage:1.3.0` = bundle 1.3.0 |
+| git tag = image tag = prompt bundle | `v1.2.0` = `afyaplus-triage:1.2.0` = bundle 1.2.0 | `v1.3.1` = `afyaplus-triage:1.3.1` = bundle 1.3.1 (v1.3.0 + pipeline fixes, same prompts and MCP) |
 | prompts | 1.2.0 active (`da2a2183ac50`) | 1.2.0 active + **1.3.0-candidate** (`20f536db4193`) on 10% of staging keys |
 | config / model_version | `gpt-4o-mini-2024-07-18`, temp 0, model_version 2026.10.0 | same |
 | MCP server | afyaplus-logistics **1.0.0** | afyaplus-logistics **1.1.0** (`find_clinics` + optional `has_stock_item`) |
-| image ID ([ledger](runbook.md#10-release-ledger)) | `sha256:d66b6d9c510e…` | `sha256:550e67da89ae…` |
+| image ID ([ledger](runbook.md#10-release-ledger)) | `sha256:d66b6d9c510e…` | `sha256:7202308e4ee8…` (v1.3.0: `sha256:550e67da89ae…`) |
 
 At runtime, `GET /health` returns all of these, plus the full prompt SHA-256s, the config SHA-256, the image tag,
 the git SHA and whether a rollback override is in force
@@ -79,7 +79,7 @@ accounts and for the failing demos. Required checks on `main`: `lint-test`, `eva
 |---|---|
 | [08 local full run](docs/evidence/08_pipeline_local_full_run.txt) | all four stages green on v1.3.0, including the docker build, image ID and deploy gates |
 | [03 eval demo](docs/evidence/03_demo_eval_failure_blocks_deploy.txt) / [05 MCP demo](docs/evidence/05_demo_mcp_failure_blocks_deploy.txt) | a red stage stops the pipeline; build-deploy never runs |
-| GitHub Actions | _see "GitHub Actions runs" below_ |
+| GitHub Actions | real runs, linked below |
 
 `scripts/run_pipeline_local.sh` runs the same commands in the same order as `ci.yml` and `azure-pipelines.yml`.
 [azure-pipelines.yml](azure-pipelines.yml) is the config-as-code twin, with stages `Lint → Eval + McpHealth →
@@ -87,7 +87,14 @@ Deploy`.
 
 ### GitHub Actions runs
 
-_Not pushed yet; links will go here._
+| Run | Ref | lint-test | eval | mcp-health | build-deploy | Note |
+|---|---|---|---|---|---|---|
+| [37643363822](https://github.com/kennedynjagi-moringa/afyaplus-llmops-cicd/actions/runs/37643363822) | `main` | ✅ | ✅ | ✅ | ✅ | full pipeline green |
+| [37643372664](https://github.com/kennedynjagi-moringa/afyaplus-llmops-cicd/actions/runs/37643372664) | tag `v1.3.1` | ✅ | ✅ | ✅ | ✅ | release build (`--release` tag check) and deploy gates |
+| [37642720085](https://github.com/kennedynjagi-moringa/afyaplus-llmops-cicd/actions/runs/37642720085) | tag `v1.3.0` | ✅ | ✅ | ✅ | ❌ | **canary NO-GO**: 29 candidate requests < 40, auto-rollback. Tag not moved; fixed in v1.3.1 |
+| [37642721970](https://github.com/kennedynjagi-moringa/afyaplus-llmops-cicd/actions/runs/37642721970) | tag `v1.2.0` | ✅ | ✅ | ✅ | ❌ | deploy gates and rollback drill passed; teardown step lacked `JWT_SECRET` (fixed in v1.3.1) |
+
+Failing-gate runs (eval-blocked PR, `workflow_dispatch` demos): see the rows below once they are linked.
 
 ## Eval gate
 
@@ -170,8 +177,8 @@ week's pipeline proves. The agent's tool contract (the MCP server) **is** here a
 
 ## Fallbacks declared
 
-- [x] **act / workflow_dispatch dry run.** `scripts/run_pipeline_local.sh` mirrors `ci.yml` stage by stage. `act`
-      is not installed. GitHub Actions run status: see "GitHub Actions runs".
+- [ ] ~~act / workflow_dispatch dry run~~ **Not needed:** the pipeline runs on GitHub Actions (public repo). The
+      local runner `scripts/run_pipeline_local.sh` mirrors `ci.yml` stage by stage as a backup.
 - [x] **Stub retrain (model_version bump only).** No GPU. [scripts/retrain_stub.py](scripts/retrain_stub.py) and
       [retrain-stub.yml](.github/workflows/retrain-stub.yml) bump `model_version` and write a CHANGELOG line
       saying no weights were trained. Gate still runs: [evidence 10](docs/evidence/10_retrain_stub.txt).
