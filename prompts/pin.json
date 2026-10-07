@@ -1,0 +1,12 @@
+{
+  "bundle_version": "1.2.0",
+  "prompts": {
+    "1.2.0": {
+      "file": "triage_system_v1.2.0.txt",
+      "sha256": "da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc",
+      "status": "active",
+      "approved_by": ["clinical_ops", "ml-eng"],
+      "notes": "Week 6/7 production prompt (served as triage-v1), first put under semver here."
+    }
+  }
+}
