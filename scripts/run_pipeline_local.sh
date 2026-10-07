@@ -15,7 +15,7 @@ DEMO_FAILURE=${DEMO_FAILURE:-none}
 MCP_TARGET=${MCP_TARGET:-live}
 mkdir -p "$OUT_DIR"
 REF=$(git describe --tags --exact-match 2>/dev/null || git rev-parse --abbrev-ref HEAD)
-echo "local pipeline: ref=$REF commit=$(git rev-parse --short=12 HEAD) dirty=$([[ -n $(git status --porcelain) ]] && echo yes || echo no) demo_failure=$DEMO_FAILURE mcp_target=$MCP_TARGET"
+echo "local pipeline: ref=$REF commit=$(git rev-parse --short=12 HEAD) dirty=$([[ -n $(git status --porcelain --untracked-files=no) ]] && echo yes || echo no) demo_failure=$DEMO_FAILURE mcp_target=$MCP_TARGET"
 
 stage() {   # stage <name> <command...>: run, tee, and stop the pipeline if it fails
   local name=$1; shift
