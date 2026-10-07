@@ -311,7 +311,7 @@ def record(prompt: Prompt, cases: list[GoldenCase], config: TriageConfig, fixtur
 def render(res: Result) -> str:
     lines = [
         f"## Eval gate: prompt {res.prompt.version} ({res.role}, sha {res.prompt.short_sha}): "
-        f"{'PASS' if res.passed else 'FAIL'}",
+        f"{('PASS (waived)' if any(g.get('waived') for g in res.gates) else 'PASS') if res.passed else 'FAIL'}",
         "",
         f"eval_score={res.agreement:.4f}  (urgency_agreement over {res.n_scored} cases; "
         f"raw model before safety rules {res.raw_model_agreement:.4f}; by split "
