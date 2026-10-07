@@ -11,7 +11,7 @@ Versioning (new in Week 8)
 - Every tool call is counted in the shared store (tool_metrics.py), labelled with SERVER_VERSION.
 
 Tools
-- find_clinics(county, service?, open_24_hours?, limit?)  -> clinics matching the filters
+- find_clinics(county, service?, open_24_hours?, has_stock_item?, limit?)  -> clinics matching the filters
 - check_stock(clinic_id, item)                             -> quantity and status of one stock item
 
 Resource
@@ -52,7 +52,7 @@ from afyaplus.logging_setup import configure_logging, trace_id_var
 from tool_metrics import ToolMetrics
 
 SERVER_NAME = "afyaplus-logistics"
-SERVER_VERSION = "1.0.0"
+SERVER_VERSION = "1.1.0"
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_PATH = Path(os.environ.get("CLINICS_PATH", PROJECT_ROOT / "clinics.json"))
@@ -215,6 +215,9 @@ def find_clinics(
     service: Annotated[str | None, Field(description="Service from clinics://catalogue, e.g. 'maternity'")] = None,
     open_24_hours: Annotated[bool | None, Field(description="true: 24-hour clinics only; false: others only")] = None,
     limit: Annotated[int, Field(description="Maximum clinics to return, 1-10")] = 5,
+    has_stock_item: Annotated[str | None, Field(
+        description="Only clinics with this stock item available or low (not out of stock), e.g. 'oxytocin_10iu'"
+    )] = None,
 ) -> dict:
     """Find AfyaPlus partner clinics in one Kenyan county, optionally filtered by service and 24-hour opening.
 
@@ -226,6 +229,8 @@ def find_clinics(
         open_24_hours: Optional. True returns only clinics open 24 hours; False only those
             that are not; omit to return both.
         limit: Maximum clinics to return, 1 to 10 (default 5). Higher KEPH levels come first.
+        has_stock_item: Optional stock item key from the catalogue (added in 1.1.0). Only clinics where the
+            item is not out of stock are returned, each with a "stock" field giving that item's status.
 
     Returns:
         {"ok": true, "count": n, "total_matches": m, "clinics": [{id, name, sub_county,
@@ -234,7 +239,7 @@ def find_clinics(
         A county with no matching clinic returns ok=true and count=0.
 
     Errors (returned as data, never raised):
-        UNKNOWN_COUNTY, UNKNOWN_SERVICE, INVALID_LIMIT, each with a hint and the valid values.
+        UNKNOWN_COUNTY, UNKNOWN_SERVICE, UNKNOWN_ITEM, INVALID_LIMIT, each with a hint and the valid values.
     """
     matched_county = _match(county, COUNTIES)
     if matched_county is None:
@@ -248,6 +253,13 @@ def find_clinics(
             return _error("UNKNOWN_SERVICE", f"'{service}' is not a service recorded in the registry.",
                           "Use one of valid_values, or omit service to list all clinics in the county.",
                           valid_values=SERVICES, did_you_mean=_suggest(service.lower(), SERVICES))
+    matched_item = None
+    if has_stock_item is not None and has_stock_item.strip():
+        matched_item = _match(has_stock_item, ITEMS)
+        if matched_item is None:
+            return _error("UNKNOWN_ITEM", f"'{has_stock_item}' is not a tracked stock item.",
+                          "Use one of valid_values, or omit has_stock_item.",
+                          valid_values=ITEMS, did_you_mean=_suggest(has_stock_item.lower(), ITEMS))
     if not 1 <= limit <= MAX_LIMIT:
         return _error("INVALID_LIMIT", f"limit must be between 1 and {MAX_LIMIT}; got {limit}.",
                       f"Call again with limit between 1 and {MAX_LIMIT}.")
@@ -257,6 +269,7 @@ def find_clinics(
         if c.county == matched_county
         and (matched_service is None or matched_service in c.services)
         and (open_24_hours is None or c.open_24_hours == open_24_hours)
+        and (matched_item is None or c.stock[matched_item].quantity > 0)
     ]
     matches.sort(key=lambda c: (-c.kephl_level, c.id))
     shown = matches[:limit]
@@ -267,11 +280,13 @@ def find_clinics(
     return {
         "ok": True,
         "county": matched_county,
-        "filters": {"service": matched_service, "open_24_hours": open_24_hours},
+        "filters": {"service": matched_service, "open_24_hours": open_24_hours, "has_stock_item": matched_item},
         "count": len(shown),
         "total_matches": len(matches),
         "clinics": [c.model_dump(include={"id", "name", "sub_county", "kephl_level", "open_24_hours",
-                                          "services", "ambulance", "phone"}) for c in shown],
+                                          "services", "ambulance", "phone"})
+                    | ({"stock": {"item": matched_item, "status": _status(c.stock[matched_item])}}
+                       if matched_item else {}) for c in shown],
         "note": note,
     }
 
@@ -313,12 +328,7 @@ def check_stock(
                       valid_values=ITEMS, did_you_mean=_suggest(item.lower(), ITEMS))
 
     level = clinic.stock[matched_item]
-    if level.quantity == 0:
-        status = "out_of_stock"
-    elif level.quantity <= level.reorder_level:
-        status = "low"
-    else:
-        status = "available"
+    status = _status(level)
     age = (date.today() - clinic.stock_updated).days
     return {
         "ok": True,
@@ -333,6 +343,12 @@ def check_stock(
         "days_since_update": age,
         "stale": age > STALE_AFTER_DAYS,
     }
+
+
+def _status(level: StockLevel) -> str:
+    if level.quantity == 0:
+        return "out_of_stock"
+    return "low" if level.quantity <= level.reorder_level else "available"
 
 
 # ---- resource ---------------------------------------------------------------
