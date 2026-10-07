@@ -4,9 +4,9 @@
     python scripts/canary_gate.py --db logs/tool_metrics.db         # straight from a counter store file
 
 GO when all of these hold (thresholds in config/triage.yaml `canary:`):
-  - every prompt arm's triage error rate is at or below error_rate_max (0.10)
+  - every prompt arm's triage error rate stays under error_rate_max (strictly below 0.10)
   - the candidate arm, if one is serving, has at least min_requests requests (there is enough evidence)
-  - production MCP tool calls (component "mcp") have an error rate at or below error_rate_max
+  - production MCP tool calls (component "mcp") have an error rate under error_rate_max
   - with --url: /ready is 200, i.e. the MCP handshake lists the required tools (check_stock)
 Exit 0 = GO, 1 = NO-GO. The deploy stub sets CANDIDATE_PERCENT=0 on NO-GO (automatic canary rollback).
 """
@@ -57,8 +57,8 @@ def decide(rows: list[dict], ready: dict | None, error_rate_max: float, min_requ
         checks.append(("traffic", False, "no triage requests recorded"))
     for arm, a in sorted(arms.items()):
         rate = a["errors"] / a["calls"]
-        checks.append((f"error_rate[{arm}]", rate <= error_rate_max,
-                       f"{a['errors']}/{a['calls']} = {rate:.3f} (max {error_rate_max}) "
+        checks.append((f"error_rate[{arm}]", rate < error_rate_max,
+                       f"{a['errors']}/{a['calls']} = {rate:.3f} (must be < {error_rate_max}) "
                        f"prompt {', '.join(sorted(a['versions']))}"))
     if "candidate" in arms:
         n = arms["candidate"]["calls"]
@@ -66,7 +66,8 @@ def decide(rows: list[dict], ready: dict | None, error_rate_max: float, min_requ
     mcp = [r for r in rows if r["component"] == "mcp"]
     if mcp:
         calls, errors = sum(r["calls"] for r in mcp), sum(r["errors"] for r in mcp)
-        checks.append(("error_rate[mcp tools]", errors / calls <= error_rate_max, f"{errors}/{calls}"))
+        checks.append(("error_rate[mcp tools]", errors / calls < error_rate_max,
+                       f"{errors}/{calls} = {errors / calls:.3f} (must be < {error_rate_max})"))
     if ready is not None:
         checks.append(("mcp_handshake", bool(ready.get("ready")),
                        f"/ready: {ready.get('mcp')} failed={ready.get('failed_checks')}"))

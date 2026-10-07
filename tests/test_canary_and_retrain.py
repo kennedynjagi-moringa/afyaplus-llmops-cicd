@@ -25,6 +25,12 @@ def test_no_go_when_candidate_errors_exceed_threshold():
     assert not go and ("error_rate[candidate]", False) in [(n, ok) for n, ok, _ in checks]
 
 
+def test_error_rate_must_stay_strictly_under_threshold():
+    go, _ = decide([_row("active", "1.2.0", 270, 0), _row("candidate", "1.3.0-candidate", 60, 6)],
+                   {"ready": True}, 0.10, 20)
+    assert not go  # 6/60 = 0.10 is not "under 0.10"
+
+
 def test_no_go_without_enough_candidate_traffic():
     go, _ = decide([_row("active", "1.2.0", 290, 0), _row("candidate", "1.3.0-candidate", 5, 0)],
                    {"ready": True}, 0.10, 20)
