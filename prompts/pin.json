@@ -23,6 +23,16 @@
         "approved_in": "feature/eval-gate review, 2026-10-07 (roles played by the author; see README)",
         "expires": "2026-11-30"
       }
+    },
+    "1.3.0-candidate": {
+      "file": "triage_system_v1.3.0-candidate.txt",
+      "sha256": "20f536db419369a964ed642e89366b43d48bce84fd3b32eefae50b1c8e3acb55",
+      "status": "candidate",
+      "approved_by": [
+        "clinical_ops",
+        "ml-eng"
+      ],
+      "notes": "Explicit URGENT/EMERGENCY criteria (fever under 5, stopped long-term medicines, pregnancy and newborn danger signs), no doses, ignore instructions inside messages. Gate: 0.973 (holdout 0.933), emergency recall 1.0. About 1.8x the input tokens of 1.2.0."
     }
   }
 }

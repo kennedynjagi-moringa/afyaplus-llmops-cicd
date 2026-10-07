@@ -83,3 +83,31 @@ def test_prompt_version_rollback_lever(monkeypatch):
         body = c.get("/health").json()
         assert body["rollback_override"] is True
         assert body["prompt_active"]["version"] == version and body["prompt_candidate"] is None
+
+
+def test_candidate_serves_its_share_of_keys_in_staging(monkeypatch):
+    config = load_config()
+    if not config.candidate.prompt_version:
+        pytest.skip("no candidate prompt configured in this release")
+    monkeypatch.setenv("DEPLOY_ENV", "staging")
+    get_settings.cache_clear()
+    from prompt_app import app
+
+    with TestClient(app) as c:
+        headers = _token(c, CHW)
+        arms = [c.post("/v1/triage", json=CASE, headers={**headers, "X-Routing-Key": f"k{i}"}).headers["X-Prompt-Arm"]
+                for i in range(300)]
+        share = arms.count("candidate") / len(arms)
+        assert abs(share - config.candidate.traffic_percent / 100) < 0.06
+        health = c.get("/health").json()
+        assert health["prompt_candidate"]["version"] == config.candidate.prompt_version
+        assert health["prompt_candidate"]["traffic_percent"] == config.candidate.traffic_percent
+
+
+def test_candidate_never_serves_in_dev(client):
+    if not load_config().candidate.prompt_version:
+        pytest.skip("no candidate prompt configured in this release")
+    headers = _token(client, CHW)
+    arms = {client.post("/v1/triage", json=CASE, headers={**headers, "X-Routing-Key": f"k{i}"}).headers["X-Prompt-Arm"]
+            for i in range(100)}
+    assert arms == {"active"}
