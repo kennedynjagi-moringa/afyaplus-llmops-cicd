@@ -155,8 +155,9 @@ def test_stale_recording_cannot_run(tmp_path):
         ev.recorded_outputs(ACTIVE, CASES, CONFIG, tmp_path)
 
 
-def test_cli_on_repo_state_passes(tmp_path):
-    assert ev.main(["--report-dir", str(tmp_path)]) == ev.EXIT_PASS
+def test_cli_scores_the_active_prompt(tmp_path):
+    # Gating the candidate is the eval job's work, not a unit test's. Here only the CLI wiring and the report.
+    assert ev.main(["--prompt-version", CONFIG.prompt_version, "--report-dir", str(tmp_path)]) == ev.EXIT_PASS
     report = json.loads(next(Path(tmp_path).glob(f"eval_{CONFIG.prompt_version}_*.json")).read_text())
     assert report["metric"] == "urgency_agreement" and report["n_scored"] == len(CASES)
 
